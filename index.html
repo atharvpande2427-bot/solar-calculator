@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Solar Savings Calculator | Santaji Electricals</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+  margin:0;
+  font-family:'Segoe UI', sans-serif;
+  background:linear-gradient(135deg,#e6fff6,#f0fdf4);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+}
+.card{
+  background:#fff;
+  padding:30px;
+  width:400px;
+  border-radius:16px;
+  box-shadow:0 15px 40px rgba(0,0,0,0.12);
+}
+.top{
+  display:flex;
+  justify-content:flex-end;
+}
+.lang button{
+  border:none;
+  background:#e5e7eb;
+  padding:5px 8px;
+  margin-left:5px;
+  border-radius:6px;
+  cursor:pointer;
+  font-size:12px;
+}
+h2{
+  text-align:center;
+  margin:10px 0 5px;
+  color:#065f46;
+}
+.sub{
+  text-align:center;
+  font-size:14px;
+  color:#555;
+  margin-bottom:20px;
+}
+input,button{
+  width:100%;
+  padding:12px;
+  margin:10px 0;
+  border-radius:10px;
+  font-size:16px;
+}
+input{border:1px solid #ddd;}
+button{
+  border:none;
+  background:#16a34a;
+  color:#fff;
+  cursor:pointer;
+}
+button:hover{background:#15803d;}
+.result{
+  margin-top:15px;
+  background:#f0fdf4;
+  padding:15px;
+  border-radius:10px;
+  display:none;
+}
+.result p{margin:6px 0;font-size:14px;}
+.highlight{font-weight:bold;color:#065f46;}
+.whatsapp{background:#25d366;margin-top:10px;}
+.footer{text-align:center;font-size:13px;color:#555;margin-top:15px;}
+.note{font-size:12px;color:#666;margin-top:8px;text-align:center;}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+  <div class="top">
+    <div class="lang">
+      <button onclick="setLang('en')">EN</button>
+      <button onclick="setLang('hi')">HI</button>
+      <button onclick="setLang('mr')">MR</button>
+    </div>
+  </div>
+
+  <h2 id="title">Solar Savings Calculator</h2>
+  <div class="sub" id="subtitle">PM Surya Ghar Muft Bijli Yojana</div>
+
+  <input id="bill" type="number" placeholder="Monthly Electricity Bill (₹)">
+
+  <button onclick="calculate()" id="calcBtn">Calculate Savings</button>
+
+  <div class="result" id="resultBox">
+    <p>⚡ <span id="t_units"></span>: <span class="highlight" id="units"></span></p>
+    <p>🔋 <span id="t_kw"></span>: <span class="highlight" id="kw"></span></p>
+    <p>💸 <span id="t_cost"></span>: <span class="highlight" id="cost"></span></p>
+    <p>🏛 <span id="t_subsidy"></span>: <span class="highlight" id="subsidy"></span></p>
+    <p>✅ <span id="t_net"></span>: <span class="highlight" id="net"></span></p>
+    <p>📆 <span id="t_payback"></span>: <span class="highlight" id="payback"></span></p>
+  </div>
+
+  <div class="note">
+    * Government subsidy applicable up to 3 kW only (Max ₹78,000)
+  </div>
+
+  <button class="whatsapp" onclick="whatsapp()">WhatsApp – Free Site Survey</button>
+
+  <div class="footer">
+    Santaji Electricals<br>
+    📞 9011788999 | 9422168882
+  </div>
+</div>
+
+<script>
+/* ---------- Language Text ---------- */
+const text = {
+  en:{title:"Solar Savings Calculator",sub:"PM Surya Ghar Muft Bijli Yojana",
+      units:"Monthly Units",kw:"Recommended Solar Size",cost:"System Cost",
+      subsidy:"Government Subsidy",net:"Net Payable",
+      payback:"Payback Period"},
+  hi:{title:"सोलर बचत कैलकुलेटर",sub:"पीएम सूर्य घर मुफ्त बिजली योजना",
+      units:"मासिक यूनिट",kw:"अनुशंसित सोलर क्षमता",cost:"सिस्टम लागत",
+      subsidy:"सरकारी सब्सिडी",net:"आपकी अंतिम लागत",
+      payback:"वसूली अवधि"},
+  mr:{title:"सोलर बचत कॅल्क्युलेटर",sub:"पीएम सूर्य घर मोफत वीज योजना",
+      units:"मासिक युनिट",kw:"शिफारस केलेली सोलर क्षमता",cost:"सिस्टम खर्च",
+      subsidy:"शासकीय अनुदान",net:"एकूण देय रक्कम",
+      payback:"परतावा कालावधी"}
+};
+
+function setLang(l){
+  document.getElementById("title").innerText=text[l].title;
+  document.getElementById("subtitle").innerText=text[l].sub;
+  document.getElementById("t_units").innerText=text[l].units;
+  document.getElementById("t_kw").innerText=text[l].kw;
+  document.getElementById("t_cost").innerText=text[l].cost;
+  document.getElementById("t_subsidy").innerText=text[l].subsidy;
+  document.getElementById("t_net").innerText=text[l].net;
+  document.getElementById("t_payback").innerText=text[l].payback;
+}
+setLang("en");
+
+/* ---------- Subsidy Logic (Maharashtra – Official) ---------- */
+function calculateSubsidy(kw){
+  if (kw <= 1) return 30000;
+  if (kw <= 2) return 60000;
+  if (kw <= 3) return 78000;
+  return 78000; // cap at 3 kW
+}
+
+/* ---------- Main Calculation ---------- */
+function calculate(){
+  let bill = Number(document.getElementById("bill").value);
+  if(bill <= 0){
+    alert("Please enter a valid electricity bill amount");
+    return;
+  }
+
+  const unitCost = 10;                 // ₹ per unit
+  const unitsPerKwPerMonth = 120;      // 4 units/day × 30
+  const costPerKw = 60000;             // assumed market cost
+
+  let units = bill / unitCost;
+  let kw = units / unitsPerKwPerMonth;
+  kw = Math.round(kw * 2) / 2;         // round to 0.5 kW
+
+  let systemCost = kw * costPerKw;
+  let subsidy = calculateSubsidy(kw);
+  let net = systemCost - subsidy;
+
+  let annualSaving = bill * 12;
+  let paybackMonths = Math.round((net / annualSaving) * 12);
+
+  document.getElementById("units").innerText = units.toFixed(0) + " units";
+  document.getElementById("kw").innerText = kw + " kW";
+  document.getElementById("cost").innerText = "₹ " + systemCost.toLocaleString();
+  document.getElementById("subsidy").innerText = "₹ " + subsidy.toLocaleString();
+  document.getElementById("net").innerText = "₹ " + net.toLocaleString();
+  document.getElementById("payback").innerText = paybackMonths + " months";
+
+  document.getElementById("resultBox").style.display = "block";
+}
+
+function whatsapp(){
+  let msg = "I want to install solar under PM Surya Ghar Muft Bijli Yojana. Please contact me.";
+  window.open("https://wa.me/919011788999?text=" + encodeURIComponent(msg));
+}
+</script>
+
+</body>
+</html>
