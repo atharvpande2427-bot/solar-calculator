@@ -95,11 +95,8 @@ button:hover{background:#15803d;}
   <h2 id="title">Solar Savings Calculator</h2>
   <div class="sub" id="subtitle">PM Surya Ghar Muft Bijli Yojana</div>
 
-  <!-- Lead inputs -->
   <input id="name" type="text" placeholder="Your Name">
   <input id="phone" type="tel" placeholder="Mobile Number">
-
-  <!-- Bill input -->
   <input id="bill" type="number" placeholder="Monthly Electricity Bill (₹)">
 
   <button onclick="calculate()">Calculate Savings</button>
@@ -126,8 +123,7 @@ button:hover{background:#15803d;}
 </div>
 
 <script>
-/* ---------- CONFIG ---------- */
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyfqgEvZfKrhZ73tCLd55vnwzZvsupUdkJp6VuBP4bkEY8QtHiIJZ0ItDIVVj4OSm926g/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz8LkyFAlsxZSY4lQSEo0MWMKEXK92vLvWz2-X_bwWVnDAxs7ECSXMSPmX_xhz4MWS0cg/exec";
 
 /* ---------- LANGUAGE ---------- */
 const text = {
@@ -156,98 +152,64 @@ function setLang(l){
 }
 setLang("en");
 
-/* ---------- SUBSIDY LOGIC (MAHARASHTRA) ---------- */
-function calculateSubsidy(kw){
-  if(kw <= 1) return 30000;
-  if(kw <= 2) return 60000;
-  return 78000;
-}
-
 /* ---------- CALCULATOR ---------- */
 let lastCalc = {};
-
 function calculate(){
   let bill = Number(document.getElementById("bill").value);
-  if(bill <= 0){
-    alert("Please enter a valid electricity bill amount");
-    return;
-  }
+  if(bill <= 0){ alert("Enter valid bill"); return; }
 
-  const unitCost = 10;
-  const unitsPerKwMonth = 120;
-  const costPerKw = 60000;
+  let units = bill / 10;
+  let kw = Math.ceil(units / 120);
 
-  let units = bill / unitCost;
-  let rawKw = units / unitsPerKwMonth;
-  let kw = Math.ceil(rawKw);
-
-  let systemCost = kw * costPerKw;
-  let subsidy = calculateSubsidy(kw);
+  let systemCost = kw * 60000;
+  let subsidy = kw <= 1 ? 30000 : kw <= 2 ? 60000 : 78000;
   let net = systemCost - subsidy;
-  let annualSaving = bill * 12;
-  let paybackMonths = Math.round((net / annualSaving) * 12);
+  let payback = Math.round((net / (bill * 12)) * 12);
 
-  lastCalc = { bill, units, kw, systemCost, subsidy, net, paybackMonths };
+  lastCalc = {bill, units, kw, systemCost, subsidy, net, payback};
 
-  document.getElementById("units").innerText = units.toFixed(0) + " units";
+  document.getElementById("units").innerText = units.toFixed(0);
   document.getElementById("kw").innerText = kw + " kW";
   document.getElementById("cost").innerText = "₹ " + systemCost.toLocaleString();
   document.getElementById("subsidy").innerText = "₹ " + subsidy.toLocaleString();
   document.getElementById("net").innerText = "₹ " + net.toLocaleString();
-  document.getElementById("payback").innerText = paybackMonths + " months";
+  document.getElementById("payback").innerText = payback + " months";
 
   document.getElementById("resultBox").style.display = "block";
 }
 
-/* ---------- AUTO LEAD CAPTURE ---------- */
+/* ---------- LEAD CAPTURE (GET IMAGE METHOD) ---------- */
 function submitLead(){
+  if(!lastCalc.kw){ alert("Calculate savings first"); return; }
+
   let name = document.getElementById("name").value.trim();
   let phone = document.getElementById("phone").value.trim();
+  if(name==="" || phone===""){ alert("Enter name & phone"); return; }
 
-  if(name === "" || phone === ""){
-    alert("Please enter your name and mobile number");
-    return;
-  }
-  if(!lastCalc.kw){
-    alert("Please calculate savings first");
-    return;
-  }
+  let url =
+    SCRIPT_URL +
+    "?name=" + encodeURIComponent(name) +
+    "&phone=" + encodeURIComponent(phone) +
+    "&bill=" + lastCalc.bill +
+    "&units=" + lastCalc.units +
+    "&kw=" + lastCalc.kw +
+    "&systemCost=" + lastCalc.systemCost +
+    "&subsidy=" + lastCalc.subsidy +
+    "&net=" + lastCalc.net +
+    "&payback=" + lastCalc.payback;
 
-  let payload = {
-    name: name,
-    phone: phone,
-    bill: lastCalc.bill,
-    units: lastCalc.units,
-    kw: lastCalc.kw,
-    systemCost: lastCalc.systemCost,
-    subsidy: lastCalc.subsidy,
-    net: lastCalc.net,
-    payback: lastCalc.paybackMonths
-  };
+  let img = new Image();
+  img.src = url;
 
-  // 🔥 FIX 3 APPLIED HERE
-  fetch(SCRIPT_URL + "?ping=1")
-    .finally(() => {
+  alert("Thank you! Our team will contact you shortly.");
 
-      navigator.sendBeacon(
-        SCRIPT_URL,
-        new Blob([JSON.stringify(payload)], { type: "application/json" })
-      );
-
-      alert("Thank you! Our team will contact you shortly.");
-
-      window.open(
-        "https://wa.me/919011788999?text=" +
-        encodeURIComponent("I want to install rooftop solar under PM Surya Ghar Muft Bijli Yojana."),
-        "_blank"
-      );
-  });
+  window.open(
+    "https://wa.me/919011788999?text=" +
+    encodeURIComponent("I want to install rooftop solar under PM Surya Ghar Muft Bijli Yojana."),
+    "_blank"
+  );
 }
-
-
 </script>
 
 </body>
 </html>
-
-
