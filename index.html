@@ -187,16 +187,18 @@ function submitLead(){
   if(name==="" || phone===""){ alert("Enter name & phone"); return; }
 
   let url =
-    SCRIPT_URL +
-    "?name=" + encodeURIComponent(name) +
-    "&phone=" + encodeURIComponent(phone) +
-    "&bill=" + lastCalc.bill +
-    "&units=" + lastCalc.units +
-    "&kw=" + lastCalc.kw +
-    "&systemCost=" + lastCalc.systemCost +
-    "&subsidy=" + lastCalc.subsidy +
-    "&net=" + lastCalc.net +
-    "&payback=" + lastCalc.payback;
+  SCRIPT_URL +
+  "?ts=" + Date.now() +   // 🔥 CACHE BUSTER (CRITICAL)
+  "&name=" + encodeURIComponent(name) +
+  "&phone=" + encodeURIComponent(phone) +
+  "&bill=" + lastCalc.bill +
+  "&units=" + lastCalc.units +
+  "&kw=" + lastCalc.kw +
+  "&systemCost=" + lastCalc.systemCost +
+  "&subsidy=" + lastCalc.subsidy +
+  "&net=" + lastCalc.net +
+  "&payback=" + lastCalc.payback;
+
 
   let img = new Image();
   img.src = url;
@@ -213,3 +215,4 @@ function submitLead(){
 
 </body>
 </html>
+
